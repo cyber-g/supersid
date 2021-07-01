@@ -163,6 +163,8 @@ except ImportError:
 try:
     import pysmu # ADALM1000
     audioModule.append("adalm1k")
+    # Requires libsmu which provides pysmu
+    # https://github.com/analogdevicesinc/libsmu
 
     class adalm1k_adccard():
         """
