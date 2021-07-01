@@ -160,6 +160,30 @@ try:
 except ImportError:
     pass
 
+try:
+    import pysmu # ADALM1000
+    audioModule.append("adalm1k")
+
+    class adalm1k_adccard():
+        """
+        docstring
+        """
+        def __init__(self) -> None:
+            pass
+
+        def capture_1sec(self):
+            pass
+
+        def close(self):
+            pass
+
+        def info(self):
+            pass
+
+
+
+except expression as identifier:
+    pass
 
 class Sampler():
     """Sampler will gather sound capture from various devices: sound cards or remote server"""
@@ -181,6 +205,8 @@ class Sampler():
                 self.capture_device = alsaaudio_soundcard(controller.config['Card'],
                                                           controller.config['PeriodSize'],
                                                           audio_sampling_rate)
+            elif controller.config['Audio'] == 'adalm1k':
+                self.capture_device = adalm1k_adccard(sampling_rate)
             else:
                 self.display_error_message("Unknown audio module:" + controller.config['Audio'])
                 self.sampler_ok = False
