@@ -22,6 +22,7 @@
 from __future__ import print_function   # use the new Python 3 'print' function
 from struct import unpack as st_unpack
 from numpy import array
+import numpy
 
 audioModule=[]
 try:
@@ -168,23 +169,44 @@ try:
 
     class adalm1k_adccard():
         """
-        docstring
+        A class for the ADALM1000 ADC board
         """
-        def __init__(self) -> None:
-            pass
+        def __init__(self,audio_sampling_rate):
+            self.audio_sampling_rate = audio_sampling_rate
+
+            self.a1k_session = pysmu.Session(sample_rate=audio_sampling_rate)
+            if self.a1k_session.devices:
+                # Grab the first device from the session.
+                self.dev = self.a1k_session.devices[0]
+
+                # Set both channels to high impedance mode.
+                self.chan_a = self.dev.channels['A']
+                self.chan_b = self.dev.channels['B']
+                self.chan_a.mode = pysmu.Mode.HI_Z
+                self.chan_b.mode = pysmu.Mode.HI_Z
 
         def capture_1sec(self):
-            pass
+            # duration = 1 sec hence   1 x self.audio_sampling_rate = self.audio_sampling_rate
+            samples = self.dev.get_samples(self.audio_sampling_rate)
+            # returns a list : (N_samples,(2,2))
+            # from plot-voltage.py we know than chan_A voltage is in "samples[:][0][0]"
+            samples_mat = numpy.array(samples)
+            return samples_mat[:,0,0]
 
         def close(self):
-            pass
+            self.a1k_session._close()
 
         def info(self):
-            pass
+            # Inspired from hotplug.py
+            self.a1k_session.scan()
+            self.available_devices = self.a1k_session.available_devices
+            print("Number of available devices: " + str(len(self.available_devices)))
+            # Inspired from pysmu.py
+            for i, dev in enumerate(self.a1k_session.devices):
+                print('device {}: {}'.format(i, dev))
 
 
-
-except expression as identifier:
+except ImportError:
     pass
 
 class Sampler():
@@ -208,7 +230,7 @@ class Sampler():
                                                           controller.config['PeriodSize'],
                                                           audio_sampling_rate)
             elif controller.config['Audio'] == 'adalm1k':
-                self.capture_device = adalm1k_adccard(sampling_rate)
+                self.capture_device = adalm1k_adccard(audio_sampling_rate)
             else:
                 self.display_error_message("Unknown audio module:" + controller.config['Audio'])
                 self.sampler_ok = False
@@ -291,6 +313,15 @@ if __name__ == '__main__':
 
     if 'pyaudio' in audioModule:
         sc = pyaudio_soundcard(48000)
+        sc.info()
+    else:
+        print("not installed.")
+
+    print("\n", "- "*60)
+    print("adalm1k:")
+
+    if 'adalm1k'in audioModule:
+        sc = adalm1k_adccard(48000)
         sc.info()
     else:
         print("not installed.")
