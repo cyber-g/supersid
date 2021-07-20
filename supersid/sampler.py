@@ -185,6 +185,8 @@ try:
                 self.chan_a.mode = pysmu.Mode.HI_Z
                 self.chan_b.mode = pysmu.Mode.HI_Z
 
+                self.name = "adalm1k ADC card capture"
+
         def capture_1sec(self):
             # duration = 1 sec hence   1 x self.audio_sampling_rate = self.audio_sampling_rate
             samples = self.dev.get_samples(self.audio_sampling_rate)
